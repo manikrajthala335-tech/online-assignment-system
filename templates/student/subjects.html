@@ -1,0 +1,56 @@
+\{% extends "base.html" %}
+{% block title %}My Subjects{% endblock %}
+
+{% block body %}
+<div class="layout">
+
+  <aside class="sidebar">
+    <h4>Student Panel</h4>
+    <a class="nav-item" href="{% url 'student_dashboard' %}">⌂ Dashboard</a>
+    <a class="nav-item" href="{% url 'student_subjects' %}">📚 Subjects</a>
+    <a class="nav-item" href="{% url 'student_assignments' %}">📝 Assignments</a>
+    <a class="nav-item" href="{% url 'student_submissions' %}">📤 Submissions</a>
+    <a class="nav-item" href="{% url 'student_grades' %}">📊 Grades</a>
+    <a class="nav-item" href="{% url 'student_subject_marks' %}">🎓 Subject Marks</a>
+    <a class="nav-item" href="{% url 'student_profile' %}">👤 Profile</a>
+    <a class="nav-item" href="{% url 'student_notifications' %}">🔔 Notifications</a>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-title">
+      <div>
+        <h1>My Subjects</h1>
+        <p>Subjects in which you are enrolled.</p>
+      </div>
+    </div>
+
+    <div class="card form-card">
+      <h2 class="section-title">Enroll in a Subject</h2>
+      <form method="post" action="{% url 'enroll_subject' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-primary">Enroll Subject</button>
+      </form>
+    </div>
+
+    <div style="height:18px"></div>
+
+    <div class="grid grid-3">
+      {% for e in enrollments %}
+        <div class="card">
+          <h2 class="section-title">{{ e.subject.subject_name }}</h2>
+          <p><b>Code:</b> {{ e.subject.subject_code }}</p>
+          <p><b>Teacher:</b> {{ e.subject.teacher.user.name }}</p>
+          <p style="margin:10px 0"><span class="badge badge-success">{{ e.status|title }}</span></p>
+          <a class="btn btn-secondary" href="{% url 'student_assignments' %}">View Assignments</a>
+        </div>
+      {% empty %}
+        <div class="card empty">No subjects enrolled yet.</div>
+      {% endfor %}
+    </div>
+
+  </main>
+
+</div>
+{% endblock %}

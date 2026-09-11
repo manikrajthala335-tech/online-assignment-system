@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+
+{% block body %}
+<div class="layout">
+
+  <aside class="sidebar">
+    <h4>Admin Panel</h4>
+    <a class="nav-item" href="{% url 'admin_dashboard' %}">⌂ Dashboard</a>
+    <a class="nav-item" href="{% url 'admin_users' %}">👥 Users</a>
+    <a class="nav-item" href="{% url 'admin_teachers' %}">👨‍🏫 Teachers</a>
+    <a class="nav-item" href="{% url 'admin_students' %}">🎓 Students</a>
+
+    <a class="nav-item" href="{% url 'admin_subjects' %}">📚 Subjects</a>
+    <a class="nav-item" href="{% url 'admin_requirements' %}">📌 Requirements</a>
+    <a class="nav-item" href="{% url 'admin_reports' %}">📋 Reports</a>
+    <a class="nav-item" href="{% url 'admin_notifications' %}">🔔 Notifications</a>
+    <a class="nav-item" href="{% url 'admin_profile' %}">👤 Profile</a>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-title">
+      <div>
+        <h1>Notifications</h1>
+        <p>Notification UI placeholder.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="notification">
+        <div>ℹ️</div>
+        <div>
+          <b>Notification module</b>
+          <p>The provided ER diagram does not contain a NOTIFICATION entity, so notifications are kept as frontend UI only in this version.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+{% endblock %}

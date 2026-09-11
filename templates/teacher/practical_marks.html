@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Practical Marks{% endblock %}
+
+{% block body %}
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <h4>Teacher Panel</h4>
+
+        <a class="nav-item" href="{% url 'teacher_dashboard' %}">
+            ⌂ Dashboard
+        </a>
+
+        <a class="nav-item" href="{% url 'teacher_subjects' %}">
+            📚 Subjects
+        </a>
+
+        <a class="nav-item" href="{% url 'teacher_assignments' %}">
+            📝 Assignments
+        </a>
+
+        <a class="nav-item" href="{% url 'add_assignment' %}">
+            ➕ Add Assignment
+        </a>
+
+        <a class="nav-item" href="{% url 'teacher_submissions' %}">
+            📥 Submissions
+        </a>
+
+        <a class="nav-item" href="{% url 'teacher_grades' %}">
+            📊 Grades
+        </a>
+
+        <a class="nav-item" href="{% url 'practical_marks' %}">
+            📋 Practical Marks
+        </a>
+
+        <a class="nav-item" href="{% url 'teacher_profile' %}">
+            👤 Profile
+        </a>
+
+        <a class="nav-item" href="{% url 'teacher_notifications' %}">
+            🔔 Notifications
+        </a>
+
+    </aside>
+
+
+    <main class="main">
+
+        <div class="page-title">
+
+            <div>
+                <h1>Practical Marks</h1>
+                <p>Add and view practical marks for graded submissions.</p>
+            </div>
+
+        </div>
+
+
+        {% if grade %}
+
+        <div class="card form-card">
+
+            <h2 class="section-title">
+                Add Practical Mark
+            </h2>
+
+            <p style="margin-bottom: 20px;">
+                <strong>Student:</strong>
+                {{ grade.submission.student.name }}
+                <br>
+
+                <strong>Assignment:</strong>
+                {{ grade.submission.assignment.title }}
+                <br>
+
+                <strong>Assignment Marks:</strong>
+                {{ grade.total_marks }}/{{ grade.submission.assignment.max_marks }}
+            </p>
+
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                {% for field in form %}
+
+                <div class="form-group">
+
+                    <label>
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.errors %}
+                    <div class="alert alert-danger">
+                        {{ field.errors }}
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                {% endfor %}
+
+
+                <button
+                    class="btn btn-primary"
+                    type="submit"
+                >
+                    Save Practical Mark
+                </button>
+
+
+                <a
+                    href="{% url 'practical_marks' %}"
+                    class="btn btn-secondary"
+                    style="margin-left: 8px;"
+                >
+                    Cancel
+                </a>
+
+            </form>
+
+        </div>
+
+        <div style="height: 20px;"></div>
+
+        {% endif %}
+
+
+        <!-- GRADED SUBMISSIONS -->
+
+        <div class="card">
+
+            <h2 class="section-title">
+                Select Graded Submission
+            </h2>
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Student</th>
+                            <th>Assignment</th>
+                            <th>Assignment Marks</th>
+                            <th>Practical Marks</th>
+                            <th>Action</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for g in grades %}
+
+                    <tr>
+
+                        <!-- STUDENT -->
+
+                        <td>
+                            {{ g.submission.student.name }}
+                        </td>
+
+
+                        <!-- ASSIGNMENT -->
+
+                        <td>
+                            {{ g.submission.assignment.title }}
+                        </td>
+
+
+                        <!-- ASSIGNMENT MARKS -->
+
+                        <td>
+                            <strong>
+                                {{ g.total_marks }}
+                            </strong>
+                            /
+                            {{ g.submission.assignment.max_marks }}
+                        </td>
+
+
+                        <!-- PRACTICAL MARKS -->
+
+                        <td>
+
+                            {% for mark in marks %}
+
+                                {% if mark.grade_id == g.grade_id %}
+
+                                    <div style="
+                                        margin-bottom: 10px;
+                                        padding: 8px;
+                                        border-bottom: 1px solid #eee;
+                                    ">
+
+                                        <strong>
+                                            {{ mark.criteria }}
+                                        </strong>
+
+                                        <br>
+
+                                        <span>
+                                            {{ mark.marks }}/{{ mark.max_marks }}
+                                        </span>
+
+                                        {% if mark.comments %}
+
+                                            <br>
+
+                                            <small style="color: #666;">
+                                                {{ mark.comments }}
+                                            </small>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                {% endif %}
+
+                            {% empty %}
+
+                                <span style="color: #777;">
+                                    No practical marks
+                                </span>
+
+                            {% endfor %}
+
+                        </td>
+
+
+                        <!-- ACTION -->
+
+                        <td>
+
+                            <a
+                                class="btn btn-secondary"
+                                href="{% url 'practical_marks_grade' g.grade_id %}"
+                            >
+                                Add Practical Mark
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="5" style="text-align: center;">
+                            No graded submissions available.
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- ALL PRACTICAL MARKS -->
+
+        <div class="card" style="margin-top: 20px;">
+
+            <h2 class="section-title">
+                Practical Marks Details
+            </h2>
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Student</th>
+                            <th>Assignment</th>
+                            <th>Criteria</th>
+                            <th>Marks</th>
+                            <th>Comments</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for mark in marks %}
+
+                    <tr>
+
+                        <td>
+                            {{ mark.grade.submission.student.name }}
+                        </td>
+
+                        <td>
+                            {{ mark.grade.submission.assignment.title }}
+                        </td>
+
+                        <td>
+                            <strong>
+                                {{ mark.criteria }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            <strong>
+                                {{ mark.marks }}
+                            </strong>
+                            /
+                            {{ mark.max_marks }}
+                        </td>
+
+                        <td>
+                            {% if mark.comments %}
+                                {{ mark.comments }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+
+                    </tr>
+
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="5" style="text-align: center;">
+                            No practical marks have been added yet.
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Manage Assignments{% endblock %}
+
+{% block body %}
+<div class="layout">
+
+  <aside class="sidebar">
+    <h4>Teacher Panel</h4>
+    <a class="nav-item" href="{% url 'teacher_dashboard' %}">⌂ Dashboard</a>
+    <a class="nav-item" href="{% url 'teacher_subjects' %}">📚 Subjects</a>
+    <a class="nav-item" href="{% url 'teacher_assignments' %}">📝 Assignments</a>
+    <a class="nav-item" href="{% url 'add_assignment' %}">➕ Add Assignment</a>
+    <a class="nav-item" href="{% url 'teacher_submissions' %}">📥 Submissions</a>
+    <a class="nav-item" href="{% url 'teacher_grades' %}">📊 Grades</a>
+    <a class="nav-item" href="{% url 'practical_marks' %}">📋 Practical Marks</a>
+    <a class="nav-item" href="{% url 'teacher_profile' %}">👤 Profile</a>
+    <a class="nav-item" href="{% url 'teacher_notifications' %}">🔔 Notifications</a>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-title">
+      <div>
+        <h1>Manage Assignments</h1>
+        <p>Create and monitor assignments.</p>
+      </div>
+      <a class="btn btn-primary" href="{% url 'add_assignment' %}">+ Add Assignment</a>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Title</th>
+          <th>Subject</th>
+          <th>Deadline</th>
+          <th>Max Marks</th>
+          <th>Submissions</th>
+        </tr>
+        {% for a in assignments %}
+          <tr>
+            <td>{{ a.title }}</td>
+            <td>{{ a.subject.subject_name }}</td>
+            <td>{{ a.deadline }}</td>
+            <td>{{ a.max_marks }}</td>
+            <td>{{ a.submission_count }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5">No assignments.</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+  </main>
+
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Submission Details{% endblock %}
+
+{% block body %}
+<div class="layout">
+
+  <aside class="sidebar">
+    <h4>Teacher Panel</h4>
+    <a class="nav-item" href="{% url 'teacher_dashboard' %}">⌂ Dashboard</a>
+    <a class="nav-item" href="{% url 'teacher_subjects' %}">📚 Subjects</a>
+    <a class="nav-item" href="{% url 'teacher_assignments' %}">📝 Assignments</a>
+    <a class="nav-item" href="{% url 'add_assignment' %}">➕ Add Assignment</a>
+    <a class="nav-item" href="{% url 'teacher_submissions' %}">📥 Submissions</a>
+    <a class="nav-item" href="{% url 'teacher_grades' %}">📊 Grades</a>
+    <a class="nav-item" href="{% url 'practical_marks' %}">📋 Practical Marks</a>
+    <a class="nav-item" href="{% url 'teacher_profile' %}">👤 Profile</a>
+    <a class="nav-item" href="{% url 'teacher_notifications' %}">🔔 Notifications</a>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-title">
+      <div>
+        <h1>Submission Details</h1>
+        <p>Review and grade the submission.</p>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h2 class="section-title">Submission</h2>
+        <div class="detail-grid">
+          <strong>Student</strong>
+          <span>{{ submission.student.name }}</span>
+          <strong>Assignment</strong>
+          <span>{{ submission.assignment.title }}</span>
+          <strong>Subject</strong>
+          <span>{{ submission.assignment.subject.subject_name }}</span>
+          <strong>Submitted</strong>
+          <span>{{ submission.submitted_at }}</span>
+          <strong>File</strong>
+          <span><a class="btn btn-secondary" href="{{ submission.file_path.url }}">Open File</a></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Grade Submission</h2>
+        <form method="post">
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="form-group">
+              <label>{{ field.label }}</label>
+              {{ field }}
+              {{ field.errors }}
+            </div>
+          {% endfor %}
+          <button class="btn btn-success">Save Grade</button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+{% endblock %}

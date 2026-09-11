@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Subjects{% endblock %}
+
+{% block body %}
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <h4>Admin Panel</h4>
+
+        <a class="nav-item" href="{% url 'admin_dashboard' %}">
+            ⌂ Dashboard
+        </a>
+
+        <a class="nav-item" href="{% url 'admin_users' %}">
+            👥 Users
+        </a>
+
+        <a class="nav-item" href="{% url 'admin_teachers' %}">
+            👨‍🏫 Teachers
+        </a>
+    <a class="nav-item" href="{% url 'admin_students' %}">🎓 Students</a>
+
+        <a class="nav-item" href="{% url 'admin_subjects' %}">
+            📚 Subjects
+        </a>
+
+        <a class="nav-item" href="{% url 'admin_requirements' %}">
+            📌 Requirements
+        </a>
+
+        <a class="nav-item" href="{% url 'admin_reports' %}">📋 Reports</a>
+
+        <a class="nav-item" href="{% url 'admin_notifications' %}">
+            🔔 Notifications
+        </a>
+
+        <a class="nav-item" href="{% url 'admin_profile' %}">
+            👤 Profile
+        </a>
+
+    </aside>
+
+
+    <main class="main">
+
+        <div class="page-title">
+
+            <div>
+
+                <h1>Manage Subjects</h1>
+
+                <p>
+                    Create subjects and assign them to teachers.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- ADD SUBJECT -->
+
+        <div class="card form-card">
+
+            <h2 class="section-title">
+                Add Subject
+            </h2>
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                {% for field in form %}
+
+                    <div class="form-group">
+
+                        <label>
+                            {{ field.label }}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.errors %}
+
+                            <div class="alert alert-danger">
+                                {{ field.errors }}
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Add Subject & Assign Teacher
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <div style="height:20px"></div>
+
+
+        <!-- SUBJECT LIST -->
+
+        <div class="card">
+
+            <h2 class="section-title">
+                All Subjects
+            </h2>
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Code</th>
+                            <th>Teacher</th>
+                            <th>Description</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for s in subjects %}
+
+                        <tr>
+
+                            <td>
+                                {{ s.subject_id }}
+                            </td>
+
+                            <td>
+                                {{ s.subject_name }}
+                            </td>
+
+                            <td>
+                                {{ s.subject_code }}
+                            </td>
+
+                            <td>
+
+                                {% if s.teacher %}
+
+                                    {{ s.teacher.user.name }}
+
+                                {% else %}
+
+                                    Not Assigned
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ s.description|default:"-" }}
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td colspan="5">
+                                No subjects available.
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+{% endblock %}

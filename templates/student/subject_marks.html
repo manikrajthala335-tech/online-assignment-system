@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Subject Marks{% endblock %}
+
+{% block body %}
+<div class="layout">
+
+  <aside class="sidebar">
+    <h4>Student Panel</h4>
+    <a class="nav-item" href="{% url 'student_dashboard' %}">⌂ Dashboard</a>
+    <a class="nav-item" href="{% url 'student_subjects' %}">📚 Subjects</a>
+    <a class="nav-item" href="{% url 'student_assignments' %}">📝 Assignments</a>
+    <a class="nav-item" href="{% url 'student_submissions' %}">📤 Submissions</a>
+    <a class="nav-item" href="{% url 'student_grades' %}">📊 Grades</a>
+    <a class="nav-item" href="{% url 'student_subject_marks' %}">🎓 Subject Marks</a>
+    <a class="nav-item" href="{% url 'student_profile' %}">👤 Profile</a>
+    <a class="nav-item" href="{% url 'student_notifications' %}">🔔 Notifications</a>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-title">
+      <div>
+        <h1>Subject Marks</h1>
+        <p>Overall calculated marks.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Subject</th>
+          <th>Obtained</th>
+          <th>Maximum</th>
+          <th>Percentage</th>
+          <th>Grade</th>
+        </tr>
+        {% for m in marks %}
+          <tr>
+            <td>{{ m.subject.subject_name }}</td>
+            <td>{{ m.total_obtained_marks }}</td>
+            <td>{{ m.total_max_marks }}</td>
+            <td>
+              {% if m.total_max_marks %}
+                {% widthratio m.total_obtained_marks m.total_max_marks 100 %}%
+              {% else %}
+                0%
+              {% endif %}
+            </td>
+            <td><span class="badge badge-info">{{ m.grade_letter }}</span></td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5">No marks calculated yet.</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+  </main>
+
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.home, name="home"),
+    path("login/", views.login_view, name="login"),
+    path("register/", views.register_view, name="register"),
+    path("logout/", views.logout_view, name="logout"),
+    path("dashboard/", views.dashboard, name="dashboard"),
+
+    path("student/dashboard/", views.student_dashboard, name="student_dashboard"),
+    path("student/subjects/", views.student_subjects, name="student_subjects"),
+    path("student/subjects/enroll/", views.enroll_subject, name="enroll_subject"),
+    path("student/assignments/", views.student_assignments, name="student_assignments"),
+    path("student/assignments/<int:assignment_id>/", views.student_assignment_detail, name="student_assignment_detail"),
+    path("student/assignments/<int:assignment_id>/submit/", views.submit_assignment, name="submit_assignment"),
+    path("student/submissions/", views.student_submissions, name="student_submissions"),
+    path("student/grades/", views.student_grades, name="student_grades"),
+    path("student/subject-marks/", views.student_subject_marks, name="student_subject_marks"),
+    path("student/profile/", views.student_profile, name="student_profile"),
+    path("student/notifications/", views.student_notifications, name="student_notifications"),
+
+    path("teacher/dashboard/", views.teacher_dashboard, name="teacher_dashboard"),
+    path("teacher/subjects/", views.teacher_subjects, name="teacher_subjects"),
+    path("teacher/assignments/", views.teacher_assignments, name="teacher_assignments"),
+    path("teacher/assignments/add/", views.add_assignment, name="add_assignment"),
+    path("teacher/submissions/", views.teacher_submissions, name="teacher_submissions"),
+    path("teacher/submissions/<int:submission_id>/", views.submission_details, name="submission_details"),
+    path("teacher/grades/", views.teacher_grades, name="teacher_grades"),
+    path("teacher/practical-marks/",views.practical_marks,name="practical_marks"),
+    path("teacher/practical-marks/<int:grade_id>/",views.practical_marks,name="practical_marks_grade"), 
+    path("teacher/profile/", views.teacher_profile, name="teacher_profile"),
+    path("teacher/notifications/", views.teacher_notifications, name="teacher_notifications"),
+
+    path("admin-panel/dashboard/", views.admin_dashboard, name="admin_dashboard"),
+    path("admin-panel/users/", views.admin_users, name="admin_users"),
+    path("admin-panel/users/<int:user_id>/delete/", views.admin_delete_user, name="admin_delete_user"),
+    path("admin-panel/users/<int:user_id>/edit/",views.admin_edit_user,name="admin_edit_user"),
+    path("admin-panel/teachers/", views.admin_teachers, name="admin_teachers"),
+    path("admin-panel/subjects/", views.admin_subjects, name="admin_subjects"),
+    path("admin-panel/requirements/", views.admin_requirements, name="admin_requirements"),
+    path("admin-panel/profile/", views.admin_profile, name="admin_profile"),
+    path("admin-panel/notifications/", views.admin_notifications, name="admin_notifications"),
+    path("admin-panel/teachers/<int:teacher_id>/edit/",views.admin_edit_teacher,name="admin_edit_teacher"),
+    path("admin-panel/teachers/<int:teacher_id>/delete/",views.admin_delete_teacher,name="admin_delete_teacher"),
+    path("admin-panel/students/",views.admin_students,name="admin_students"),
+    path("admin-panel/students/<int:user_id>/edit/",views.admin_edit_student,name="admin_edit_student"),
+    path("admin-panel/students/<int:user_id>/delete/",views.admin_delete_student,name="admin_delete_student"),
+    path("admin-panel/reports/",views.admin_reports,name="admin_reports"),
+    
+    
+]

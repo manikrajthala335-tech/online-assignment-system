@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Teacher Profile{% endblock %}
+
+{% block body %}
+<div class="layout">
+
+  <aside class="sidebar">
+    <h4>Teacher Panel</h4>
+    <a class="nav-item" href="{% url 'teacher_dashboard' %}">⌂ Dashboard</a>
+    <a class="nav-item" href="{% url 'teacher_subjects' %}">📚 Subjects</a>
+    <a class="nav-item" href="{% url 'teacher_assignments' %}">📝 Assignments</a>
+    <a class="nav-item" href="{% url 'add_assignment' %}">➕ Add Assignment</a>
+    <a class="nav-item" href="{% url 'teacher_submissions' %}">📥 Submissions</a>
+    <a class="nav-item" href="{% url 'teacher_grades' %}">📊 Grades</a>
+    <a class="nav-item" href="{% url 'practical_marks' %}">📋 Practical Marks</a>
+    <a class="nav-item" href="{% url 'teacher_profile' %}">👤 Profile</a>
+    <a class="nav-item" href="{% url 'teacher_notifications' %}">🔔 Notifications</a>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-title">
+      <div>
+        <h1>Teacher Profile</h1>
+        <p>Update account and teacher information.</p>
+      </div>
+    </div>
+
+    <div class="card form-card">
+      <div class="profile-header">
+        <div class="profile-avatar">{{ user.name|first|upper }}</div>
+        <div>
+          <h2>{{ user.name }}</h2>
+          <p style="color:#666">Teacher Account</p>
+        </div>
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <h3 class="section-title">User Information</h3>
+        {% for field in user_form %}
+          <div class="form-group">
+            <label>{{ field.label }}</label>
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+
+        <h3 class="section-title">Teacher Information</h3>
+        {% for field in teacher_form %}
+          <div class="form-group">
+            <label>{{ field.label }}</label>
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+
+        <button class="btn btn-primary">Save Changes</button>
+      </form>
+    </div>
+
+  </main>
+
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Assignments{% endblock %}
+
+{% block body %}
+<div class="layout">
+
+  <aside class="sidebar">
+    <h4>Student Panel</h4>
+    <a class="nav-item" href="{% url 'student_dashboard' %}">⌂ Dashboard</a>
+    <a class="nav-item" href="{% url 'student_subjects' %}">📚 Subjects</a>
+    <a class="nav-item" href="{% url 'student_assignments' %}">📝 Assignments</a>
+    <a class="nav-item" href="{% url 'student_submissions' %}">📤 Submissions</a>
+    <a class="nav-item" href="{% url 'student_grades' %}">📊 Grades</a>
+    <a class="nav-item" href="{% url 'student_subject_marks' %}">🎓 Subject Marks</a>
+    <a class="nav-item" href="{% url 'student_profile' %}">👤 Profile</a>
+    <a class="nav-item" href="{% url 'student_notifications' %}">🔔 Notifications</a>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-title">
+      <div>
+        <h1>Assignments</h1>
+        <p>Assignments from your enrolled subjects.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Title</th>
+          <th>Subject</th>
+          <th>Deadline</th>
+          <th>Max Marks</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+        {% for a in assignments %}
+          {% with s=submission_map|get_item:a.assignment_id %}
+            <tr>
+              <td>{{ a.title }}</td>
+              <td>{{ a.subject.subject_name }}</td>
+              <td>{{ a.deadline|date:"M d, Y H:i" }}</td>
+              <td>{{ a.max_marks }}</td>
+              <td>
+                {% if s %}
+                  <span class="badge badge-success">{{ s.status|title }}</span>
+                {% else %}
+                  <span class="badge badge-warning">Pending</span>
+                {% endif %}
+              </td>
+              <td><a class="btn btn-primary" href="{% url 'student_assignment_detail' a.assignment_id %}">View</a></td>
+            </tr>
+          {% endwith %}
+        {% empty %}
+          <tr>
+            <td colspan="6">No assignments available.</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+  </main>
+
+</div>
+{% endblock %}

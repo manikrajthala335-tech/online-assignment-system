@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Grades{% endblock %}
+
+{% block body %}
+<div class="layout">
+
+  <aside class="sidebar">
+    <h4>Student Panel</h4>
+    <a class="nav-item" href="{% url 'student_dashboard' %}">⌂ Dashboard</a>
+    <a class="nav-item" href="{% url 'student_subjects' %}">📚 Subjects</a>
+    <a class="nav-item" href="{% url 'student_assignments' %}">📝 Assignments</a>
+    <a class="nav-item" href="{% url 'student_submissions' %}">📤 Submissions</a>
+    <a class="nav-item" href="{% url 'student_grades' %}">📊 Grades</a>
+    <a class="nav-item" href="{% url 'student_subject_marks' %}">🎓 Subject Marks</a>
+    <a class="nav-item" href="{% url 'student_profile' %}">👤 Profile</a>
+    <a class="nav-item" href="{% url 'student_notifications' %}">🔔 Notifications</a>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-title">
+      <div>
+        <h1>Grades & Feedback</h1>
+        <p>Marks received for your submissions.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Assignment</th>
+          <th>Subject</th>
+          <th>Marks</th>
+          <th>Teacher</th>
+          <th>Feedback</th>
+          <th>Date</th>
+        </tr>
+        {% for g in grades %}
+          <tr>
+            <td>{{ g.submission.assignment.title }}</td>
+            <td>{{ g.submission.assignment.subject.subject_name }}</td>
+            <td><b>{{ g.total_marks }}/{{ g.submission.assignment.max_marks }}</b></td>
+            <td>{{ g.teacher.user.name }}</td>
+            <td>{{ g.feedback|default:"-" }}</td>
+            <td>{{ g.graded_at|date:"M d, Y" }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6">No grades yet.</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+  </main>
+
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}My Submissions{% endblock %}
+
+{% block body %}
+<div class="layout">
+
+  <aside class="sidebar">
+    <h4>Student Panel</h4>
+    <a class="nav-item" href="{% url 'student_dashboard' %}">⌂ Dashboard</a>
+    <a class="nav-item" href="{% url 'student_subjects' %}">📚 Subjects</a>
+    <a class="nav-item" href="{% url 'student_assignments' %}">📝 Assignments</a>
+    <a class="nav-item" href="{% url 'student_submissions' %}">📤 Submissions</a>
+    <a class="nav-item" href="{% url 'student_grades' %}">📊 Grades</a>
+    <a class="nav-item" href="{% url 'student_subject_marks' %}">🎓 Subject Marks</a>
+    <a class="nav-item" href="{% url 'student_profile' %}">👤 Profile</a>
+    <a class="nav-item" href="{% url 'student_notifications' %}">🔔 Notifications</a>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-title">
+      <div>
+        <h1>My Submissions</h1>
+        <p>Track submitted assignments.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Assignment</th>
+          <th>Subject</th>
+          <th>Submitted At</th>
+          <th>Late?</th>
+          <th>Status</th>
+          <th>Marks</th>
+        </tr>
+        {% for s in submissions %}
+          <tr>
+            <td>{{ s.assignment.title }}</td>
+            <td>{{ s.assignment.subject.subject_name }}</td>
+            <td>{{ s.submitted_at }}</td>
+            <td>{% if s.is_late %}Yes{% else %}No{% endif %}</td>
+            <td><span class="badge badge-info">{{ s.status|title }}</span></td>
+            <td>{% if s.grade %}{{ s.grade.total_marks }}/{{ s.assignment.max_marks }}{% else %}-{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6">No submissions.</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+  </main>
+
+</div>
+{% endblock %}

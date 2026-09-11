@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block body %}
+<div class="layout">
+
+  <aside class="sidebar">
+    <h4>Admin Panel</h4>
+    <a class="nav-item" href="{% url 'admin_dashboard' %}">⌂ Dashboard</a>
+    <a class="nav-item" href="{% url 'admin_users' %}">👥 Users</a>
+    <a class="nav-item" href="{% url 'admin_teachers' %}">👨‍🏫 Teachers</a>
+    <a class="nav-item" href="{% url 'admin_students' %}">🎓 Students</a>
+    <a class="nav-item" href="{% url 'admin_subjects' %}">📚 Subjects</a>
+    <a class="nav-item" href="{% url 'admin_requirements' %}">📌 Requirements</a>
+    <a class="nav-item" href="{% url 'admin_reports' %}">📋 Reports</a>
+    <a class="nav-item" href="{% url 'admin_notifications' %}">🔔 Notifications</a>
+    <a class="nav-item" href="{% url 'admin_profile' %}">👤 Profile</a>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-title">
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p>System overview and management.</p>
+      </div>
+    </div>
+
+    <div class="grid grid-4">
+      <div class="card stat-card">
+        <div>
+          <p>Total Users</p>
+          <h3>{{ users }}</h3>
+        </div>
+        <div class="stat-icon">👥</div>
+      </div>
+
+      <div class="card stat-card">
+        <div>
+          <p>Teachers</p>
+          <h3>{{ teachers }}</h3>
+        </div>
+        <div class="stat-icon">👨‍🏫</div>
+      </div>
+
+      <div class="card stat-card">
+        <div>
+          <p>Subjects</p>
+          <h3>{{ subjects }}</h3>
+        </div>
+        <div class="stat-icon">📚</div>
+      </div>
+
+      <div class="card stat-card">
+        <div>
+          <p>Assignments</p>
+          <h3>{{ assignments }}</h3>
+        </div>
+        <div class="stat-icon">📝</div>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+{% endblock %}

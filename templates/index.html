@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block body %}
+
+<nav class="public-nav">
+  <div class="logo">Online Assignment System</div>
+  <div class="links">
+    <a href="#features">Features</a>
+    <a href="{% url 'login' %}">Login</a>
+    <a class="btn btn-primary" href="{% url 'register' %}">Register</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div>
+    <h1>Manage Assignments<br>Simply & Digitally</h1>
+    <p>A centralized platform for students, teachers and administrators to manage subjects, assignments, submissions, grading and academic records.</p>
+    <a class="btn btn-light" href="{% url 'login' %}">Get Started</a>
+  </div>
+  <div class="hero-card">
+    <h3>System Roles</h3>
+    <p style="color:#666;margin:10px 0 18px">Student, Teacher and Admin dashboards are included.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="{% url 'login' %}">Login</a>
+      <a class="btn btn-secondary" href="{% url 'register' %}">Register</a>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <div class="page-title">
+    <div>
+      <h1>System Features</h1>
+      <p>Built around the provided ER diagram.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card feature-card">
+      <div class="stat-icon">📚</div>
+      <h3>Subjects & Enrollment</h3>
+      <p>Manage subjects, teachers, student enrollment and subject requirements.</p>
+    </div>
+
+    <div class="card feature-card">
+      <div class="stat-icon">📝</div>
+      <h3>Assignments & Submissions</h3>
+      <p>Teachers post assignments and students upload their submissions.</p>
+    </div>
+
+    <div class="card feature-card">
+      <div class="stat-icon">📊</div>
+      <h3>Grades & Marks</h3>
+      <p>Store grades, practical marks and calculated student subject marks.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">© 2026 Online Assignment Submission System</footer>
+
+{% endblock %}

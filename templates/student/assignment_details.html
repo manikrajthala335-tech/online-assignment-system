@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Assignment Details{% endblock %}
+
+{% block body %}
+
+<div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h4>Student Panel</h4>
+
+        <a class="nav-item" href="{% url 'student_dashboard' %}">
+            ⌂ Dashboard
+        </a>
+
+        <a class="nav-item" href="{% url 'student_subjects' %}">
+            📚 Subjects
+        </a>
+
+        <a class="nav-item" href="{% url 'student_assignments' %}">
+            📝 Assignments
+        </a>
+
+        <a class="nav-item" href="{% url 'student_submissions' %}">
+            📤 Submissions
+        </a>
+
+        <a class="nav-item" href="{% url 'student_grades' %}">
+            📊 Grades
+        </a>
+
+        <a class="nav-item" href="{% url 'student_subject_marks' %}">
+            🎓 Subject Marks
+        </a>
+
+        <a class="nav-item" href="{% url 'student_profile' %}">
+            👤 Profile
+        </a>
+
+        <a class="nav-item" href="{% url 'student_notifications' %}">
+            🔔 Notifications
+        </a>
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main">
+
+        <!-- Page Header -->
+        <div class="page-title">
+
+            <div>
+                <h1>{{ assignment.title }}</h1>
+
+                <p>
+                    {{ assignment.subject.subject_name }}
+                    •
+                    {{ assignment.subject.subject_code }}
+                </p>
+            </div>
+
+            {% if submission %}
+                <span class="badge badge-success">
+                    {{ submission.status|title }}
+                </span>
+            {% else %}
+                <span class="badge badge-warning">
+                    Pending
+                </span>
+            {% endif %}
+
+        </div>
+
+
+        <!-- Assignment Information -->
+        <div class="grid grid-2">
+
+            <div class="card">
+
+                <h2 class="section-title">
+                    Assignment Information
+                </h2>
+
+                <div class="detail-grid">
+
+                    <strong>Description</strong>
+                    <span>
+                        {{ assignment.description|default:"-" }}
+                    </span>
+
+                    <strong>Instructions</strong>
+                    <span>
+                        {{ assignment.instructions|default:"-" }}
+                    </span>
+
+                    <strong>Deadline</strong>
+                    <span>
+                        {{ assignment.deadline }}
+                    </span>
+
+                    <strong>Maximum Marks</strong>
+                    <span>
+                        {{ assignment.max_marks }}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- Assignment File -->
+            <div class="card">
+
+                <h2 class="section-title">
+                    📄 Assignment File
+                </h2>
+
+                {% if assignment.assignment_file %}
+
+                    <p style="margin-bottom: 15px;">
+                        Your teacher has attached a file for this assignment.
+                    </p>
+
+                    <div style="
+                        padding: 18px;
+                        border: 1px solid #ddd;
+                        border-radius: 10px;
+                        background: #f8f8f8;
+                    ">
+
+                        <p style="margin-bottom: 15px;">
+                            <strong>
+                                📎 {{ assignment.assignment_file.name }}
+                            </strong>
+                        </p>
+
+                        <a
+                            href="{{ assignment.assignment_file.url }}"
+                            target="_blank"
+                            class="btn btn-primary"
+                        >
+                            👁 View File
+                        </a>
+
+                        <a
+                            href="{{ assignment.assignment_file.url }}"
+                            download
+                            class="btn btn-secondary"
+                            style="margin-left: 8px;"
+                        >
+                            ⬇ Download
+                        </a>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="alert">
+                        No assignment file has been attached by the teacher.
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- Submit Assignment -->
+        <div class="card" style="margin-top: 20px;">
+
+            <h2 class="section-title">
+                📤 Submit Assignment
+            </h2>
+
+            {% if submission %}
+
+                <div class="alert alert-success">
+
+                    Assignment submitted successfully.
+
+                    <br>
+
+                    <strong>
+                        Submitted on:
+                    </strong>
+
+                    {{ submission.submitted_at }}
+
+                </div>
+
+                <p style="margin-top: 15px;">
+                    <strong>Submission File:</strong>
+                </p>
+
+                {% if submission.file_path %}
+
+                    <a
+                        href="{{ submission.file_path.url }}"
+                        target="_blank"
+                        class="btn btn-secondary"
+                    >
+                        📄 View Submitted File
+                    </a>
+
+                {% endif %}
+
+            {% else %}
+
+                <form
+                    method="post"
+                    enctype="multipart/form-data"
+                    action="{% url 'submit_assignment' assignment.assignment_id %}"
+                >
+
+                    {% csrf_token %}
+
+                    <div class="file-box">
+
+                        <p>
+                            <strong>Select your assignment file</strong>
+                        </p>
+
+                        <p style="color:#666;">
+                            Allowed: PDF, DOC, DOCX, ZIP, TXT
+                        </p>
+
+                        <p style="color:#666;">
+                            Maximum size: 10 MB
+                        </p>
+
+                        <input
+                            class="file-input"
+                            type="file"
+                            name="file_path"
+                            required
+                        >
+
+                        <p
+                            class="file-name"
+                            style="color:#666;margin-top:8px"
+                        >
+                            No file selected
+                        </p>
+
+                    </div>
+
+                    {% if form.file_path.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.file_path.errors }}
+                        </div>
+                    {% endif %}
+
+                    <br>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        📤 Submit Assignment
+                    </button>
+
+                </form>
+
+            {% endif %}
+
+        </div>
+
+    </main>
+
+</div>
+
+{% endblock %}

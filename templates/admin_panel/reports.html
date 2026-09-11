@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block body %}
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <h4>Admin Panel</h4>
+
+        <a class="nav-item" href="{% url 'admin_dashboard' %}">
+            ⌂ Dashboard
+        </a>
+
+        <a class="nav-item" href="{% url 'admin_users' %}">
+            👥 Users
+        </a>
+
+        <a class="nav-item" href="{% url 'admin_teachers' %}">
+            👨‍🏫 Teachers
+        </a>
+
+        <a class="nav-item" href="{% url 'admin_students' %}">
+            🎓 Students
+        </a>
+
+        <a class="nav-item" href="{% url 'admin_subjects' %}">
+            📚 Subjects
+        </a>
+
+        <a class="nav-item" href="{% url 'admin_requirements' %}">
+            📌 Requirements
+        </a>
+
+        <a class="nav-item active" href="{% url 'admin_reports' %}">
+            📋 Reports
+        </a>
+
+        <a class="nav-item" href="{% url 'admin_notifications' %}">
+            🔔 Notifications
+        </a>
+
+        <a class="nav-item" href="{% url 'admin_profile' %}">
+            👤 Profile
+        </a>
+
+    </aside>
+
+
+    <main class="main">
+
+        <div class="page-title">
+
+            <div>
+                <h1>Reports</h1>
+                
+            </div>
+
+            <button onclick="window.print()" class="btn btn-primary">
+                Print Report
+            </button>
+
+        </div>
+
+
+        <!-- SUMMARY CARDS -->
+
+        <div class="stats-grid">
+
+            <div class="card stat-card">
+                <h3>Total Students</h3>
+                <p>{{ total_students }}</p>
+            </div>
+
+            <div class="card stat-card">
+                <h3>Total Teachers</h3>
+                <p>{{ total_teachers }}</p>
+            </div>
+
+            <div class="card stat-card">
+                <h3>Total Subjects</h3>
+                <p>{{ total_subjects }}</p>
+            </div>
+
+            <div class="card stat-card">
+                <h3>Total Assignments</h3>
+                <p>{{ total_assignments }}</p>
+            </div>
+
+        </div>
+
+
+        <!-- PIE CHARTS -->
+
+        <div class="report-grid">
+
+            <div class="card">
+
+                <h2 class="section-title">
+                    Student Status
+                </h2>
+
+                <div class="chart-container">
+                    <canvas id="studentStatusChart"></canvas>
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h2 class="section-title">
+                    Submission Status
+                </h2>
+
+                <div class="chart-container">
+                    <canvas id="submissionStatusChart"></canvas>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TEACHER ASSIGNMENT CHART -->
+
+        <div class="card report-card">
+
+            <h2 class="section-title">
+                Assignments Created By Teacher
+            </h2>
+
+            <div class="chart-container-large">
+                <canvas id="teacherAssignmentChart"></canvas>
+            </div>
+
+        </div>
+
+
+        <!-- SUBJECT ENROLLMENT CHART -->
+
+        <div class="card report-card">
+
+            <h2 class="section-title">
+                Students Enrolled Per Subject
+            </h2>
+
+            <div class="chart-container-large">
+                <canvas id="subjectEnrollmentChart"></canvas>
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- Chart.js -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<!-- Django safely sends database data to JavaScript -->
+
+{{ student_status_data|json_script:"student-status-data" }}
+{{ submission_status_data|json_script:"submission-status-data" }}
+{{ teacher_assignment_data|json_script:"teacher-assignment-data" }}
+{{ subject_enrollment_data|json_script:"subject-enrollment-data" }}
+
+
+<script>
+
+    // -----------------------------
+    // Student Status Pie Chart
+    // -----------------------------
+
+    const studentStatus =
+        JSON.parse(
+            document.getElementById("student-status-data").textContent
+        );
+
+    new Chart(
+        document.getElementById("studentStatusChart"),
+        {
+            type: "pie",
+
+            data: {
+                labels: studentStatus.labels,
+
+                datasets: [{
+                    data: studentStatus.data
+                }]
+            },
+
+            options: {
+                responsive: true,
+
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            }
+        }
+    );
+
+
+    // -----------------------------
+    // Submission Status Pie Chart
+    // -----------------------------
+
+    const submissionStatus =
+        JSON.parse(
+            document.getElementById("submission-status-data").textContent
+        );
+
+    new Chart(
+        document.getElementById("submissionStatusChart"),
+        {
+            type: "pie",
+
+            data: {
+                labels: submissionStatus.labels,
+
+                datasets: [{
+                    data: submissionStatus.data
+                }]
+            },
+
+            options: {
+                responsive: true,
+
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            }
+        }
+    );
+
+
+    // -----------------------------
+    // Teacher Assignment Bar Chart
+    // -----------------------------
+
+    const teacherAssignments =
+        JSON.parse(
+            document.getElementById("teacher-assignment-data").textContent
+        );
+
+    new Chart(
+        document.getElementById("teacherAssignmentChart"),
+        {
+            type: "bar",
+
+            data: {
+                labels: teacherAssignments.labels,
+
+                datasets: [{
+                    label: "Assignments",
+                    data: teacherAssignments.data
+                }]
+            },
+
+            options: {
+                responsive: true,
+
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        }
+    );
+
+
+    // -----------------------------
+    // Subject Enrollment Bar Chart
+    // -----------------------------
+
+    const subjectEnrollments =
+        JSON.parse(
+            document.getElementById("subject-enrollment-data").textContent
+        );
+
+    new Chart(
+        document.getElementById("subjectEnrollmentChart"),
+        {
+            type: "bar",
+
+            data: {
+                labels: subjectEnrollments.labels,
+
+                datasets: [{
+                    label: "Students",
+                    data: subjectEnrollments.data
+                }]
+            },
+
+            options: {
+                responsive: true,
+
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        }
+    );
+
+</script>
+
+
+<style>
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 25px;
+    }
+
+    .stat-card h3 {
+        margin-bottom: 10px;
+    }
+
+    .stat-card p {
+        font-size: 32px;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .report-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .report-card {
+        margin-bottom: 20px;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .chart-container-large {
+        position: relative;
+        height: 350px;
+    }
+
+    @media (max-width: 900px) {
+
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .report-grid {
+            grid-template-columns: 1fr;
+        }
+
+    }
+
+    @media (max-width: 600px) {
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+    }
+
+    @media print {
+
+        .sidebar,
+        .topbar,
+        .btn {
+            display: none !important;
+        }
+
+        .main {
+            width: 100%;
+        }
+
+    }
+
+</style>
+
+{% endblock %}

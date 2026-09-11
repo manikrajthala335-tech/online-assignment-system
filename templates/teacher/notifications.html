@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block body %}
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <h4>Teacher Panel</h4>
+
+        <a class="nav-item" href="{% url 'teacher_dashboard' %}">
+            ⌂ Dashboard
+        </a>
+
+        <a class="nav-item" href="{% url 'teacher_subjects' %}">
+            📚 Subjects
+        </a>
+
+        <a class="nav-item" href="{% url 'teacher_assignments' %}">
+            📝 Assignments
+        </a>
+
+        <a class="nav-item" href="{% url 'add_assignment' %}">
+            ➕ Add Assignment
+        </a>
+
+        <a class="nav-item" href="{% url 'teacher_submissions' %}">
+            📥 Submissions
+        </a>
+
+        <a class="nav-item" href="{% url 'teacher_grades' %}">
+            📊 Grades
+        </a>
+
+        <a class="nav-item" href="{% url 'practical_marks' %}">
+            📋 Practical Marks
+        </a>
+
+        <a class="nav-item" href="{% url 'teacher_profile' %}">
+            👤 Profile
+        </a>
+
+        <a class="nav-item" href="{% url 'teacher_notifications' %}">
+            🔔 Notifications
+        </a>
+
+    </aside>
+
+
+    <main class="main">
+
+        <div class="page-title">
+
+            <div>
+                <h1>Notifications</h1>
+                <p>Your latest notifications.</p>
+            </div>
+
+        </div>
+
+
+        {% if notifications %}
+
+            {% for notification in notifications %}
+
+                <div class="card" style="margin-bottom: 15px;">
+
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+
+                        <div>
+
+                            <h2 class="section-title">
+                                🔔 {{ notification.title }}
+                            </h2>
+
+                            <p>
+                                {{ notification.message }}
+                            </p>
+
+                        </div>
+
+                        <small style="color: #777;">
+                            {{ notification.created_at|date:"M d, Y h:i A" }}
+                        </small>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="card">
+
+                <h2 class="section-title">
+                    🔔 No Notifications
+                </h2>
+
+                <p>
+                    You don't have any notifications yet.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+
+    </main>
+
+</div>
+
+{% endblock %}

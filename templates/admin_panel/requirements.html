@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Subject Requirements{% endblock %}
+
+{% block body %}
+<div class="layout">
+
+  <aside class="sidebar">
+    <h4>Admin Panel</h4>
+    <a class="nav-item" href="{% url 'admin_dashboard' %}">⌂ Dashboard</a>
+    <a class="nav-item" href="{% url 'admin_users' %}">👥 Users</a>
+    <a class="nav-item" href="{% url 'admin_teachers' %}">👨‍🏫 Teachers</a>
+    <a class="nav-item" href="{% url 'admin_students' %}">🎓 Students</a>
+    <a class="nav-item" href="{% url 'admin_subjects' %}">📚 Subjects</a>
+
+    <a class="nav-item" href="{% url 'admin_requirements' %}">📌 Requirements</a>
+    <a class="nav-item" href="{% url 'admin_reports' %}">📋 Reports</a>
+    <a class="nav-item" href="{% url 'admin_notifications' %}">🔔 Notifications</a>
+    <a class="nav-item" href="{% url 'admin_profile' %}">👤 Profile</a>
+  </aside>
+
+  <main class="main">
+
+    <div class="page-title">
+      <div>
+        <h1>Subject Requirements</h1>
+        <p>Set minimum assignment requirements.</p>
+      </div>
+    </div>
+
+    <div class="card form-card">
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label>Subject</label>
+          <select class="form-control" name="subject" required>
+            {% for s in subjects %}
+              <option value="{{ s.subject_id }}">{{ s.subject_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% for field in form %}
+          <div class="form-group">
+            <label>{{ field.label }}</label>
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+        <button class="btn btn-primary">Save Requirement</button>
+      </form>
+    </div>
+
+    <div style="height:18px"></div>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Subject</th>
+          <th>Minimum Assignments</th>
+          <th>Description</th>
+        </tr>
+        {% for r in requirements %}
+          <tr>
+            <td>{{ r.subject.subject_name }}</td>
+            <td>{{ r.min_assignments }}</td>
+            <td>{{ r.description|default:"-" }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="3">No requirements.</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+  </main>
+
+</div>
+{% endblock %}
