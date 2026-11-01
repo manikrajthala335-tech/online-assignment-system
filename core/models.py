@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -102,9 +103,6 @@ class Assignment(models.Model):
     def __str__(self):
         return self.title
 
-    def __str__(self):
-        return self.title
-
 
 class Submission(models.Model):
     STATUS_CHOICES = [
@@ -119,6 +117,11 @@ class Submission(models.Model):
     submitted_at = models.DateTimeField(auto_now_add=True)
     is_late = models.BooleanField(default=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="submitted")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["assignment", "student"], name="unique_student_assignment_submission")
+        ]
 
     def __str__(self):
         return f"{self.student.name} - {self.assignment.title}"
@@ -135,6 +138,10 @@ class Grade(models.Model):
     def __str__(self):
         return f"{self.submission} - {self.total_marks}"
 
+    def clean(self):
+        if self.submission_id and self.total_marks > self.submission.assignment.max_marks:
+            raise ValidationError({"total_marks": "Marks cannot exceed the assignment maximum."})
+
 
 class PracticalMark(models.Model):
     practical_mark_id = models.BigAutoField(primary_key=True)
@@ -146,6 +153,12 @@ class PracticalMark(models.Model):
 
     def __str__(self):
         return f"{self.criteria} - {self.marks}/{self.max_marks}"
+
+    def clean(self):
+        if self.marks > self.max_marks:
+            raise ValidationError({"marks": "Marks cannot exceed the practical maximum."})
+        if self.grade_id and not self.grade.submission.assignment.subject.has_practical:
+            raise ValidationError("Practical marks can only be added to practical subjects.")
 
 
 class StudentSubjectMark(models.Model):

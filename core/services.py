@@ -1,5 +1,9 @@
-from django.db.models import Sum
-from .models import Grade, PracticalMark, StudentSubjectMark
+from .models import Grade, Notification, PracticalMark, StudentSubjectMark
+
+
+def create_notification(user, title, message):
+    """Create an in-app notification for a user."""
+    return Notification.objects.create(user=user, title=title, message=message)
 
 
 def calculate_subject_mark(student, subject):

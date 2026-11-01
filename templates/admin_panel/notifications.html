@@ -23,11 +23,21 @@
     <div class="page-title">
       <div>
         <h1>Notifications</h1>
-        <p>Notification UI placeholder.</p>
+        <p>Your latest system notifications.</p>
       </div>
     </div>
 
-    <div class="card">
+    {% for notification in notifications %}
+    <div class="card" style="margin-bottom: 15px;">
+      <h2 class="section-title">{{ notification.title }}</h2>
+      <p>{{ notification.message }}</p>
+      <small>{{ notification.created_at|date:"M d, Y h:i A" }}</small>
+    </div>
+    {% empty %}
+    <div class="card"><p>You don't have any notifications yet.</p></div>
+    {% endfor %}
+
+    <div class="card" style="display: none;">
       <div class="notification">
         <div>ℹ️</div>
         <div>

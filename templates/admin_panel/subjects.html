@@ -131,6 +131,7 @@
                             <th>Name</th>
                             <th>Code</th>
                             <th>Teacher</th>
+                            <th>Practical Required</th>
                             <th>Description</th>
 
                         </tr>
@@ -171,6 +172,14 @@
                             </td>
 
                             <td>
+                                {% if s.has_practical %}
+                                    Yes
+                                {% else %}
+                                    No
+                                {% endif %}
+                            </td>
+
+                            <td>
                                 {{ s.description|default:"-" }}
                             </td>
 
@@ -180,7 +189,7 @@
 
                         <tr>
 
-                            <td colspan="5">
+                            <td colspan="6">
                                 No subjects available.
                             </td>
 

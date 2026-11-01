@@ -22,7 +22,7 @@ The database models follow the supplied ER diagram:
 9. PRACTICAL_MARK
 10. STUDENT_SUBJECT_MARK
 
-No Course, TeacherAssignment, InternalMarks, ComplianceLog or Notification database model was added because those are not present in the supplied ER diagram. The notification pages remain frontend placeholders.
+Notifications are stored in the `Notification` model. The system creates them when a teacher posts an assignment, a student submits work, and a teacher records a grade.
 
 ## Setup on Windows
 
@@ -49,12 +49,21 @@ Open:
 config/settings.py
 
 Default configuration assumes:
+NAME=online_assignment_db
 USER=root
 PASSWORD=
 HOST=127.0.0.1
 PORT=3306
 
-Change these if your MySQL setup uses a different username/password/port.
+Change these if your MySQL setup uses a different username/password/port. Do not place passwords in `settings.py`; set `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT` as environment variables instead.
+
+Example for the current PowerShell session:
+```powershell
+$env:DB_NAME="online_assignment_db"
+$env:DB_USER="root"
+$env:DB_PASSWORD="your-mysql-password"
+$env:DJANGO_SECRET_KEY="a-long-random-secret"
+```
 
 ### 5. Create database tables
 python manage.py makemigrations
@@ -119,4 +128,5 @@ Before production use:
 - Set DEBUG=False.
 - Configure ALLOWED_HOSTS.
 - Configure a secure MySQL password.
+- Set `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False`, and `DJANGO_ALLOWED_HOSTS` as environment variables.
 - Add production file/media storage.

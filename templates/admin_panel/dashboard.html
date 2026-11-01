@@ -45,6 +45,14 @@
 
       <div class="card stat-card">
         <div>
+          <p>Students</p>
+          <h3>{{ students }}</h3>
+        </div>
+        <div class="stat-icon">🎓</div>
+      </div>
+
+      <div class="card stat-card">
+        <div>
           <p>Subjects</p>
           <h3>{{ subjects }}</h3>
         </div>
@@ -60,7 +68,77 @@
       </div>
     </div>
 
+    <div class="card dashboard-chart-card">
+      <div class="section-heading">
+        <div>
+          <h2 class="section-title">Submission Status</h2>
+          <p class="muted">Current assignment submissions across the system.</p>
+        </div>
+        <a class="btn btn-secondary" href="{% url 'admin_reports' %}">View detailed reports</a>
+      </div>
+      <div class="dashboard-chart-container">
+        <canvas id="submissionStatusChart"></canvas>
+      </div>
+    </div>
+
   </main>
 
 </div>
+
+{{ submission_status_data|json_script:"submission-status-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const submissionStatus = JSON.parse(
+    document.getElementById("submission-status-data").textContent
+  );
+
+  new Chart(document.getElementById("submissionStatusChart"), {
+    type: "doughnut",
+    data: {
+      labels: submissionStatus.labels,
+      datasets: [{
+        data: submissionStatus.data,
+        backgroundColor: ["#f59e0b", "#15803d"],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: "bottom" } }
+    }
+  });
+</script>
+
+<style>
+  .dashboard-chart-card {
+    margin-top: 24px;
+  }
+
+  .section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .muted {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .dashboard-chart-container {
+    position: relative;
+    height: 300px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 700px) {
+    .section-heading {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>
 {% endblock %}

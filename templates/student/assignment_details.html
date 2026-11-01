@@ -60,14 +60,24 @@
                 </p>
             </div>
 
-            {% if submission %}
+            {% if deadline_passed %}
+
+                <span class="badge badge-danger">
+                    Closed
+                </span>
+
+            {% elif submission %}
+
                 <span class="badge badge-success">
                     {{ submission.status|title }}
                 </span>
+
             {% else %}
+
                 <span class="badge badge-warning">
                     Pending
                 </span>
+
             {% endif %}
 
         </div>
@@ -85,21 +95,28 @@
                 <div class="detail-grid">
 
                     <strong>Description</strong>
+
                     <span>
                         {{ assignment.description|default:"-" }}
                     </span>
 
+
                     <strong>Instructions</strong>
+
                     <span>
                         {{ assignment.instructions|default:"-" }}
                     </span>
 
+
                     <strong>Deadline</strong>
+
                     <span>
                         {{ assignment.deadline }}
                     </span>
 
+
                     <strong>Maximum Marks</strong>
+
                     <span>
                         {{ assignment.max_marks }}
                     </span>
@@ -130,10 +147,13 @@
                     ">
 
                         <p style="margin-bottom: 15px;">
+
                             <strong>
                                 📎 {{ assignment.assignment_file.name }}
                             </strong>
+
                         </p>
+
 
                         <a
                             href="{{ assignment.assignment_file.url }}"
@@ -142,6 +162,7 @@
                         >
                             👁 View File
                         </a>
+
 
                         <a
                             href="{{ assignment.assignment_file.url }}"
@@ -167,14 +188,95 @@
         </div>
 
 
-        <!-- Submit Assignment -->
+        <!-- Submission Section -->
         <div class="card" style="margin-top: 20px;">
 
             <h2 class="section-title">
                 📤 Submit Assignment
             </h2>
 
-            {% if submission %}
+
+            <!-- ================================================= -->
+            <!-- DEADLINE HAS PASSED -->
+            <!-- ================================================= -->
+
+            {% if deadline_passed %}
+
+                <div class="alert alert-danger">
+
+                    <strong>
+                        Submission Closed
+                    </strong>
+
+                    <br>
+
+                    The deadline for this assignment has passed.
+
+                    {% if submission %}
+
+                        <br><br>
+
+                        Your submitted assignment is still available,
+                        but you can no longer submit or unsubmit it.
+
+                    {% endif %}
+
+                </div>
+
+
+                {% if submission %}
+
+                    <p style="margin-top: 15px;">
+                        <strong>
+                            Submitted File:
+                        </strong>
+                    </p>
+
+
+                    {% if submission.file_path %}
+
+                        <a
+                            href="{{ submission.file_path.url }}"
+                            target="_blank"
+                            class="btn btn-secondary"
+                        >
+                            📄 View Submitted File
+                        </a>
+
+                    {% endif %}
+
+
+                    <p style="
+                        margin-top: 15px;
+                        color: #666;
+                    ">
+
+                        <strong>
+                            Submitted on:
+                        </strong>
+
+                        {{ submission.submitted_at }}
+
+                    </p>
+
+                {% else %}
+
+                    <p style="color:#666;">
+
+                        You did not submit this assignment
+                        before the deadline.
+
+                    </p>
+
+                {% endif %}
+
+
+
+            <!-- ================================================= -->
+            <!-- BEFORE DEADLINE + ALREADY SUBMITTED -->
+            <!-- ================================================= -->
+
+            {% elif submission %}
 
                 <div class="alert alert-success">
 
@@ -190,9 +292,15 @@
 
                 </div>
 
+
                 <p style="margin-top: 15px;">
-                    <strong>Submission File:</strong>
+
+                    <strong>
+                        Submission File:
+                    </strong>
+
                 </p>
+
 
                 {% if submission.file_path %}
 
@@ -206,7 +314,42 @@
 
                 {% endif %}
 
+
+                <!-- Unsubmit Button -->
+                <form
+                    method="post"
+                    action="{% url 'unsubmit_assignment' assignment.assignment_id %}"
+                    style="margin-top: 15px;"
+                    onsubmit="return confirm('Are you sure you want to unsubmit this assignment? You will be able to submit a new file before the deadline.');"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-danger"
+                    >
+                        ↩ Unsubmit Assignment
+                    </button>
+
+                </form>
+
+
+
+
+            <!-- ================================================= -->
+            <!-- BEFORE DEADLINE + NOT SUBMITTED -->
+            <!-- ================================================= -->
+
             {% else %}
+
+                <div class="alert">
+
+                    You can submit your assignment
+                    before the deadline.
+
+                </div>
+
 
                 <form
                     method="post"
@@ -216,19 +359,31 @@
 
                     {% csrf_token %}
 
+
                     <div class="file-box">
 
                         <p>
-                            <strong>Select your assignment file</strong>
+                            <strong>
+                                Select your assignment file
+                            </strong>
                         </p>
 
-                        <p style="color:#666;">
-                            Allowed: PDF, DOC, DOCX, ZIP, TXT
-                        </p>
 
                         <p style="color:#666;">
-                            Maximum size: 10 MB
+
+                            Allowed:
+                            PDF, DOC, DOCX, ZIP, TXT
+
                         </p>
+
+
+                        <p style="color:#666;">
+
+                            Maximum size:
+                            10 MB
+
+                        </p>
+
 
                         <input
                             class="file-input"
@@ -237,22 +392,33 @@
                             required
                         >
 
+
                         <p
                             class="file-name"
-                            style="color:#666;margin-top:8px"
+                            style="
+                                color:#666;
+                                margin-top:8px;
+                            "
                         >
                             No file selected
                         </p>
 
                     </div>
 
+
                     {% if form.file_path.errors %}
+
                         <div class="alert alert-danger">
+
                             {{ form.file_path.errors }}
+
                         </div>
+
                     {% endif %}
 
+
                     <br>
+
 
                     <button
                         type="submit"

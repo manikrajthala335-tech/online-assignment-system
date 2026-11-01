@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.http import HttpResponseForbidden,HttpResponse
+from django.db import IntegrityError
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
@@ -33,14 +33,17 @@ from .models import (
     Assignment, Enrollment, Grade, PracticalMark, StudentSubjectMark,
     Subject, SubjectRequirement, Submission, Teacher, User
 )
-from .services import calculate_subject_mark
+from .services import calculate_subject_mark, create_notification
 
 
 def home(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
     return render(request, "index.html")
 
 def register_view(request):
-
+    if request.user.is_authenticated:
+        return redirect("dashboard")
     form = RegisterForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -144,20 +147,10 @@ def student_assignments(request):
 
 @role_required("student")
 def student_assignment_detail(request, assignment_id):
-    assignment = get_object_or_404(Assignment, assignment_id=assignment_id)
-    enrolled = Enrollment.objects.filter(student=request.user, subject=assignment.subject, status="active").exists()
-    if not enrolled:
-        messages.error(request, "You are not enrolled in this subject.")
-        return redirect("student_assignments")
-    submission = Submission.objects.filter(student=request.user, assignment=assignment).order_by("-submitted_at").first()
-    return render(request, "student/assignment_details.html", {
-        "assignment": assignment, "submission": submission, "form": SubmissionForm()
-    })
-
-
-@role_required("student")
-def submit_assignment(request, assignment_id):
-    assignment = get_object_or_404(Assignment, assignment_id=assignment_id)
+    assignment = get_object_or_404(
+        Assignment,
+        assignment_id=assignment_id
+    )
 
     enrolled = Enrollment.objects.filter(
         student=request.user,
@@ -166,7 +159,48 @@ def submit_assignment(request, assignment_id):
     ).exists()
 
     if not enrolled:
-        messages.error(request, "You are not enrolled in this subject.")
+        messages.error(
+            request,
+            "You are not enrolled in this subject."
+        )
+        return redirect("student_assignments")
+
+    submission = Submission.objects.filter(
+        student=request.user,
+        assignment=assignment
+    ).order_by("-submitted_at").first()
+
+    deadline_passed = timezone.now() >= assignment.deadline
+
+    return render(
+        request,
+        "student/assignment_details.html",
+        {
+            "assignment": assignment,
+            "submission": submission,
+            "form": SubmissionForm(),
+            "deadline_passed": deadline_passed,
+        }
+    )
+
+@role_required("student")
+def submit_assignment(request, assignment_id):
+    assignment = get_object_or_404(
+        Assignment,
+        assignment_id=assignment_id
+    )
+
+    enrolled = Enrollment.objects.filter(
+        student=request.user,
+        subject=assignment.subject,
+        status="active"
+    ).exists()
+
+    if not enrolled:
+        messages.error(
+            request,
+            "You are not enrolled in this subject."
+        )
         return redirect("student_assignments")
 
     if request.method != "POST":
@@ -175,24 +209,65 @@ def submit_assignment(request, assignment_id):
             assignment_id=assignment_id
         )
 
-    if timezone.now() > assignment.deadline:
-        messages.error(request, "The deadline has passed.")
+    # Prevent submission after the deadline
+    if timezone.now() >= assignment.deadline:
+        messages.error(
+            request,
+            "The submission deadline has passed. You can no longer submit this assignment."
+        )
         return redirect(
             "student_assignment_detail",
             assignment_id=assignment_id
         )
 
-    form = SubmissionForm(request.POST, request.FILES)
+    # Prevent duplicate active submission
+    if Submission.objects.filter(
+        student=request.user,
+        assignment=assignment
+    ).exists():
+        messages.error(
+            request,
+            "You have already submitted this assignment."
+        )
+        return redirect(
+            "student_assignment_detail",
+            assignment_id=assignment_id
+        )
+
+    form = SubmissionForm(
+        request.POST,
+        request.FILES
+    )
 
     if form.is_valid():
+
         submission = form.save(commit=False)
 
         submission.assignment = assignment
         submission.student = request.user
-        submission.is_late = timezone.now() > assignment.deadline
+
+        # Since submission is allowed only before deadline
+        submission.is_late = False
         submission.status = "submitted"
 
-        submission.save()
+        try:
+            submission.save()
+
+        except IntegrityError:
+            messages.error(
+                request,
+                "You have already submitted this assignment."
+            )
+            return redirect(
+                "student_assignment_detail",
+                assignment_id=assignment_id
+            )
+
+        create_notification(
+            assignment.subject.teacher.user,
+            "New assignment submission",
+            f"{request.user.name} submitted '{assignment.title}'."
+        )
 
         messages.success(
             request,
@@ -204,7 +279,6 @@ def submit_assignment(request, assignment_id):
             assignment_id=assignment_id
         )
 
-    # IMPORTANT: show validation errors
     return render(
         request,
         "student/assignment_details.html",
@@ -212,8 +286,68 @@ def submit_assignment(request, assignment_id):
             "assignment": assignment,
             "submission": None,
             "form": form,
+            "deadline_passed": timezone.now() >= assignment.deadline,
         }
     )
+    
+    
+@role_required("student")
+def unsubmit_assignment(request, assignment_id):
+    assignment = get_object_or_404(
+        Assignment,
+        assignment_id=assignment_id
+    )
+
+    if request.method != "POST":
+        return redirect(
+            "student_assignment_detail",
+            assignment_id=assignment_id
+        )
+
+    submission = get_object_or_404(
+        Submission,
+        assignment=assignment,
+        student=request.user
+    )
+
+    # Prevent unsubmit after deadline
+    if timezone.now() >= assignment.deadline:
+        messages.error(
+            request,
+            "The deadline has passed. You can no longer unsubmit this assignment."
+        )
+        return redirect(
+            "student_assignment_detail",
+            assignment_id=assignment_id
+        )
+
+    # Do not allow a graded submission to be deleted
+    if Grade.objects.filter(submission=submission).exists():
+        messages.error(
+            request,
+            "This assignment has already been graded, so it cannot be unsubmitted."
+        )
+        return redirect(
+            "student_assignment_detail",
+            assignment_id=assignment_id
+        )
+
+    # Delete the uploaded file from storage
+    if submission.file_path:
+        submission.file_path.delete(save=False)
+
+    submission.delete()
+
+    messages.success(
+        request,
+        "Assignment unsubmitted successfully. You can submit a new file before the deadline."
+    )
+
+    return redirect(
+        "student_assignment_detail",
+        assignment_id=assignment_id
+    )    
+
 
 
 @role_required("student")
@@ -250,11 +384,12 @@ def student_profile(request):
     return render(request, "student/profile.html", {"form": form})
 
 
-@login_required
+@role_required("student")
 def student_notifications(request):
     notifications = Notification.objects.filter(
         user=request.user
     )
+    notifications.filter(is_read=False).update(is_read=True)
 
     return render(
         request,
@@ -331,6 +466,13 @@ def add_assignment(request):
 
         assignment.save()
 
+        for enrollment in assignment.subject.enrollments.filter(status="active").select_related("student"):
+            create_notification(
+                enrollment.student,
+                "New assignment posted",
+                f"'{assignment.title}' was posted for {assignment.subject.subject_name}.",
+            )
+
         messages.success(request, "Assignment posted successfully.")
         return redirect("teacher_assignments")
 
@@ -339,6 +481,46 @@ def add_assignment(request):
         "teacher/add_assignment.html",
         {"form": form}
     )
+
+
+@role_required("teacher")
+def teacher_edit_assignment(request, assignment_id):
+    teacher = get_object_or_404(Teacher, user=request.user)
+    assignment = get_object_or_404(
+        Assignment.objects.select_related("subject"),
+        assignment_id=assignment_id,
+        subject__teacher=teacher,
+    )
+
+    form = AssignmentForm(request.POST or None, request.FILES or None, instance=assignment)
+    form.fields["subject"].queryset = Subject.objects.filter(teacher=teacher)
+
+    if request.method == "POST" and form.is_valid():
+        updated_assignment = form.save(commit=False)
+        if updated_assignment.subject.teacher != teacher:
+            messages.error(request, "You can only edit assignments for your own subjects.")
+            return redirect("teacher_assignments")
+        updated_assignment.save()
+        messages.success(request, "Assignment updated successfully.")
+        return redirect("teacher_assignments")
+
+    return render(request, "teacher/edit_assignment.html", {"form": form, "assignment": assignment})
+
+
+@role_required("teacher")
+def teacher_delete_assignment(request, assignment_id):
+    if request.method != "POST":
+        return redirect("teacher_assignments")
+
+    teacher = get_object_or_404(Teacher, user=request.user)
+    assignment = get_object_or_404(
+        Assignment.objects.select_related("subject"),
+        assignment_id=assignment_id,
+        subject__teacher=teacher,
+    )
+    assignment.delete()
+    messages.success(request, "Assignment deleted successfully.")
+    return redirect("teacher_assignments")
 
 
 @role_required("teacher")
@@ -368,6 +550,11 @@ def submission_details(request, submission_id):
         submission.status = "graded"
         submission.save(update_fields=["status"])
         calculate_subject_mark(submission.student, submission.assignment.subject)
+        create_notification(
+            submission.student,
+            "Assignment graded",
+            f"Your submission for '{submission.assignment.title}' has been graded.",
+        )
         messages.success(request, "Grade saved.")
         return redirect("teacher_submissions")
     return render(request, "teacher/submission_details.html", {"submission": submission, "form": form, "grade": grade})
@@ -387,10 +574,14 @@ def practical_marks(request, grade_id=None):
     form = None
     if grade_id:
         grade = get_object_or_404(Grade, grade_id=grade_id, teacher=teacher)
+        if not grade.submission.assignment.subject.has_practical:
+            messages.error(request, "Practical marks are not enabled for this subject.")
+            return redirect("practical_marks")
         form = PracticalMarkForm(request.POST or None)
         if request.method == "POST" and form.is_valid(): 
             mark = form.save(commit=False)
             mark.grade = grade
+            mark.full_clean()
             mark.save()
 
             calculate_subject_mark(
@@ -400,7 +591,10 @@ def practical_marks(request, grade_id=None):
 
             messages.success(request, "Practical mark saved.")
             return redirect("practical_marks_grade", grade_id=grade.grade_id)
-    grades = Grade.objects.filter(teacher=teacher).select_related("submission__student", "submission__assignment")
+    grades = Grade.objects.filter(
+        teacher=teacher,
+        submission__assignment__subject__has_practical=True,
+    ).select_related("submission__student", "submission__assignment")
     marks = PracticalMark.objects.filter(grade__teacher=teacher).select_related("grade")
     return render(request, "teacher/practical_marks.html", {"grades": grades, "grade": grade, "form": form, "marks": marks})
 
@@ -424,6 +618,7 @@ def teacher_notifications(request):
     notifications = Notification.objects.filter(
         user=request.user
     )
+    notifications.filter(is_read=False).update(is_read=True)
 
     return render(
         request,
@@ -438,11 +633,19 @@ def teacher_notifications(request):
 
 @role_required("admin")
 def admin_dashboard(request):
+    submitted_count = Submission.objects.filter(status="submitted").count()
+    graded_count = Submission.objects.filter(status="graded").count()
+
     return render(request, "admin_panel/dashboard.html", {
         "users": User.objects.count(),
+        "students": User.objects.filter(role="student").count(),
         "teachers": Teacher.objects.count(),
         "subjects": Subject.objects.count(),
         "assignments": Assignment.objects.count(),
+        "submission_status_data": {
+            "labels": ["Submitted", "Graded"],
+            "data": [submitted_count, graded_count],
+        },
     })
 
 
@@ -574,35 +777,9 @@ def admin_profile(request):
 
 @role_required("admin")
 def admin_notifications(request):
-    return render(request, "admin_panel/notifications.html")
-
-
-@login_required
-def admin_delete_user(request, user_id):
-    if request.user.role != "admin":
-        return HttpResponseForbidden("You do not have permission to access this page.")
-
-    if request.method == "POST":
-        try:
-            user = User.objects.get(id=user_id)
-
-            # Prevent admin from deleting their own account
-            if user.id == request.user.id:
-                messages.error(request, "You cannot delete your own admin account.")
-                return redirect("admin_users")
-
-            user_name = user.name
-            user.delete()
-
-            messages.success(
-                request,
-                f"User {user_name} has been deleted successfully."
-            )
-
-        except User.DoesNotExist:
-            messages.error(request, "User not found.")
-
-    return redirect("admin_users")
+    notifications = Notification.objects.filter(user=request.user)
+    notifications.filter(is_read=False).update(is_read=True)
+    return render(request, "admin_panel/notifications.html", {"notifications": notifications})
 
 
 
@@ -639,15 +816,13 @@ def admin_delete_user(request, user_id):
     if user == request.user:
         return redirect("admin_users")
 
-    if request.method == "POST":
-        user.delete()
+    if request.method != "POST":
         return redirect("admin_users")
 
-    return render(
-        request,
-        "admin_panel/delete_user.html",
-        {"user_obj": user}
-    )
+    user_name = user.name
+    user.delete()
+    messages.success(request, f"User '{user_name}' has been deleted successfully.")
+    return redirect("admin_users")
     
 @role_required("admin")
 def admin_students(request):
@@ -722,74 +897,6 @@ def admin_delete_student(request, user_id):
 
 @role_required("admin")
 def admin_reports(request):
-
-    # -----------------------------
-    # Basic totals
-    # -----------------------------
-
-    total_students = User.objects.filter(
-        role="student"
-    ).count()
-
-    total_teachers = Teacher.objects.count()
-
-    total_subjects = Subject.objects.count()
-
-    total_assignments = Assignment.objects.count()
-
-
-    # -----------------------------
-    # Student status
-    # -----------------------------
-
-    active_students = User.objects.filter(
-        role="student",
-        is_active=True
-    ).count()
-
-    inactive_students = User.objects.filter(
-        role="student",
-        is_active=False
-    ).count()
-
-
-    student_status_data = {
-        "labels": [
-            "Active",
-            "Inactive"
-        ],
-        "data": [
-            active_students,
-            inactive_students
-        ]
-    }
-
-
-    # -----------------------------
-    # Submission status
-    # -----------------------------
-
-    submitted_count = Submission.objects.filter(
-        status="submitted"
-    ).count()
-
-    graded_count = Submission.objects.filter(
-        status="graded"
-    ).count()
-
-
-    submission_status_data = {
-        "labels": [
-            "Submitted",
-            "Graded"
-        ],
-        "data": [
-            submitted_count,
-            graded_count
-        ]
-    }
-
-
     # -----------------------------
     # Assignments per teacher
     # -----------------------------
@@ -842,17 +949,7 @@ def admin_reports(request):
         request,
         "admin_panel/reports.html",
         {
-            "total_students": total_students,
-            "total_teachers": total_teachers,
-            "total_subjects": total_subjects,
-            "total_assignments": total_assignments,
-
-            "student_status_data": student_status_data,
-
-            "submission_status_data": submission_status_data,
-
             "teacher_assignment_data": teacher_assignment_data,
-
             "subject_enrollment_data": subject_enrollment_data,
         }
     )
