@@ -1,3 +1,4 @@
+HEAD
 # Online Assignment Submission System — Django + MySQL
 
 This is the integrated Django project for the Online Assignment Submission System.
@@ -130,3 +131,7 @@ Before production use:
 - Configure a secure MySQL password.
 - Set `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False`, and `DJANGO_ALLOWED_HOSTS` as environment variables.
 - Add production file/media storage.
+
+# online-assignment-system
+we submit assignment online
+ 08a36f757095d099a27f045659310ff27d05a694
